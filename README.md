@@ -39,8 +39,10 @@ MySQL les lit via `MYSQL_ROOT_PASSWORD_FILE` et `MYSQL_PASSWORD_FILE`. Le back l
 ## Lancer l'application
 
 ```bash
-docker compose up --build -d
+docker compose up -d
 ```
+
+Les images `notes-back` et `notes-front` sont automatiquement téléchargées depuis Docker Hub.
 
 ## Tester la communication entre conteneurs
 

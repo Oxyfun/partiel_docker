@@ -25,9 +25,7 @@ services:
       retries: 3
 
   back:
-    build:
-      context: ./back
-      dockerfile: Dockerfile
+    image: oxyfun/notes-back:latest
     container_name: notes-back
     env_file: .env
     environment:
@@ -46,9 +44,7 @@ services:
     restart: on-failure
 
   front:
-    build:
-      context: ./front
-      dockerfile: Dockerfile
+    image: oxyfun/notes-front:latest
     container_name: notes-front
     ports:
       - "80:80"
