@@ -5,6 +5,7 @@ Application full stack de gestion des notes d'élèves, conteneurisée avec Dock
 **Repository Git :** https://github.com/Oxyfun/partiel_docker
 
 **Docker Hub :**
+
 - [oxyfun/notes-back](https://hub.docker.com/r/oxyfun/notes-back)
 - [oxyfun/notes-front](https://hub.docker.com/r/oxyfun/notes-front)
 
@@ -12,11 +13,15 @@ Application full stack de gestion des notes d'élèves, conteneurisée avec Dock
 
 ## Services
 
-| Service | Image | Port | Rôle |
-|---------|-------|-------------|------|
-| `db` | `mysql:9.6.0` | 3306 | Base de données MySQL |
-| `back` | build `./back` | 3000 | API REST Node.js |
-| `front` | build `./front` | 80 | Interface HTML via Nginx |
+| Service | Image                       | Port | Rôle                            |
+| ------- | --------------------------- | ---- | ------------------------------- |
+| `db`    | `mysql:9.6.0`               | 3306 | Base de données MySQL           |
+| `back`  | `oxyfun/notes-back:latest`  | 3000 | API REST Node.js / Express      |
+| `front` | `oxyfun/notes-front:latest` | 80   | Interface HTML servie par Nginx |
+
+- **db** : conteneur MySQL. Créé à partir de l'image officielle `mysql:9.6.0`. Initialisé automatiquement avec `init.sql` via le mécanisme `/docker-entrypoint-initdb.d/`. Dépendances des autres services vérifiées via un `healthcheck`.
+- **back** : API REST Node.js. Image publiée sur Docker Hub. Démarre via `start.sh` qui lit le secret avant de lancer `node server.js`. Dépend de `db` avec la condition `service_healthy`.
+- **front** : site HTML statique servi par Nginx. Image publiée sur Docker Hub. Dépend du service `back`.
 
 ## Réseau
 
@@ -29,6 +34,7 @@ Un réseau bridge personnalisé `app-network` connecte les trois services. Le ba
 ## Secrets
 
 Les mots de passe sensibles sont stockés dans des fichiers `.secret` montés dans `/run/secrets/` à l'intérieur des conteneurs :
+
 - `db_root_password`
 - `db_password`
 
@@ -47,6 +53,7 @@ Les images `notes-back` et `notes-front` sont automatiquement téléchargées de
 ## Tester la communication entre conteneurs
 
 **Linux / macOS :**
+
 ```bash
 # Vérifier que les 3 conteneurs tournent
 docker compose ps
@@ -64,6 +71,7 @@ curl http://localhost:3000/api/notes
 ```
 
 **Windows (PowerShell) :**
+
 ```powershell
 # Vérifier que les 3 conteneurs tournent
 docker compose ps
@@ -83,6 +91,7 @@ Invoke-RestMethod http://localhost:3000/api/notes
 ## Tester la persistance des données
 
 **Linux / macOS :**
+
 ```bash
 # Arrêter les conteneurs SANS supprimer le volume
 docker compose down
@@ -95,6 +104,7 @@ curl http://localhost:3000/api/notes
 ```
 
 **Windows (PowerShell) :**
+
 ```powershell
 # Arrêter les conteneurs SANS supprimer le volume
 docker compose down
