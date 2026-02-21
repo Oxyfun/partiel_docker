@@ -1,0 +1,71 @@
+services:
+  db:
+    image: mysql:9.6.0
+    container_name: notes-db
+    env_file: .env
+    environment:
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
+      MYSQL_PASSWORD_FILE: /run/secrets/db_password
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+    ports:
+      - "3306:3306"
+    secrets:
+      - db_root_password
+      - db_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  back:
+    build:
+      context: ./back
+      dockerfile: Dockerfile
+    container_name: notes-back
+    env_file: .env
+    environment:
+      DB_HOST: db
+    secrets:
+      - db_password
+    entrypoint: ["/bin/sh", "/usr/src/app/start.sh"]
+    command: [""]
+    ports:
+      - "3000:3000"
+    networks:
+      - app-network
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: on-failure
+
+  front:
+    build:
+      context: ./front
+      dockerfile: Dockerfile
+    container_name: notes-front
+    ports:
+      - "80:80"
+    networks:
+      - app-network
+    depends_on:
+      - back
+
+secrets:
+  db_root_password:
+    file: ./secrets/db_root_password.secret
+  db_password:
+    file: ./secrets/db_password.secret
+
+volumes:
+  mysql_data:
+
+networks:
+  app-network:
+    driver: bridge

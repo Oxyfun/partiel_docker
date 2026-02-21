@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Notes des élèves</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 700px;
+        margin: 40px auto;
+        padding: 0 20px;
+      }
+      input,
+      button {
+        padding: 6px;
+        margin: 4px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+      th,
+      td {
+        border: 1px solid #ccc;
+        padding: 8px;
+        text-align: left;
+      }
+      th {
+        background: #f0f0f0;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Gestion des notes</h1>
+
+    <form id="form">
+      <input type="text" id="eleve" placeholder="Nom de l'élève" required />
+      <input type="text" id="matiere" placeholder="Matière" required />
+      <input
+        type="number"
+        id="note"
+        placeholder="Note (0-20)"
+        min="0"
+        max="20"
+        step="0.5"
+        required
+      />
+      <button type="submit">Ajouter</button>
+    </form>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Élève</th>
+          <th>Matière</th>
+          <th>Note</th>
+        </tr>
+      </thead>
+      <tbody id="tableau"></tbody>
+    </table>
+
+    <script>
+      const API = "http://localhost:3000/api/notes";
+
+      function chargerNotes() {
+        fetch(API)
+          .then((r) => r.json())
+          .then((notes) => {
+            const tbody = document.getElementById("tableau");
+            tbody.innerHTML = "";
+            notes.forEach((n) => {
+              const tr = document.createElement("tr");
+              tr.innerHTML = `<td>${n.eleve}</td><td>${n.matiere}</td><td>${n.note}</td>`;
+              tbody.appendChild(tr);
+            });
+          })
+          .catch((err) => console.error("Erreur chargement:", err));
+      }
+
+      document.getElementById("form").addEventListener("submit", function (e) {
+        e.preventDefault();
+        const eleve = document.getElementById("eleve").value;
+        const matiere = document.getElementById("matiere").value;
+        const note = parseFloat(document.getElementById("note").value);
+
+        fetch(API, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ eleve, matiere, note }),
+        })
+          .then((r) => r.json())
+          .then(() => {
+            this.reset();
+            chargerNotes();
+          })
+          .catch((err) => console.error("Erreur ajout:", err));
+      });
+
+      chargerNotes();
+    </script>
+  </body>
+</html>
